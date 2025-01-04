@@ -1,0 +1,14 @@
+Пример сообщения для партиции 0:  ORDER_COMPLAINT"
+{
+  "event_type": "ORDER_COMPLAINT",
+  "order_id": "12345",
+  "customer_id": "67890",
+  "message": "The product is damaged and needs replacement.",
+  "timestamp": "2025-01-02T10:30:00Z",
+  "status": "PENDING",
+  "complaint_details": {
+    "complaint_type": "QUALITY",
+    "description": "Product damaged during shipping.",
+    "resolution_status": "PENDING"
+  }
+}
