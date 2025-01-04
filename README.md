@@ -11,4 +11,4 @@
 Архитектура проекта пердставлена в файле [C4_Architecture](https://github.com/YanaKidun/IShop/blob/main/C4_Architecture)
 
 ## API
-Докуметация API для работы с проектом представлена в файле 
+Докуметация API для работы с проектом представлена в [файле](https://github.com/YanaKidun/IShop/blob/main/API) дополнительно ознакомится можно прейдя по сслыке: https://app.swaggerhub.com/apis/STABROVSKAYAYA/Iba/1.0.0
