@@ -1,0 +1,14 @@
+Пример сообщения для партиции 2: "ORDER_QUESTION"
+
+{
+  "event_type": "ORDER_QUESTION",
+  "order_id": "12345",
+  "customer_id": "67890",
+  "message": "When will my order be delivered?",
+  "timestamp": "2025-01-02T10:30:00Z",
+  "status": "PENDING",
+  "question_details": {
+    "question": "When will my order be delivered?",
+    "response_status": "WAITING"
+  }
+}
