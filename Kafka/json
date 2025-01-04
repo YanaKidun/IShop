@@ -1,0 +1,104 @@
+Общая схема сообщения для топика  message-service.events 
+
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "enum": ["ORDER_COMPLAINT", "ORDER_THANKS", "ORDER_QUESTION"]
+    },
+    "order_id": {
+      "type": "string",
+      "description": "Идентификатор заказа, к которому относится событие"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Идентификатор клиента, который создал событие"
+    },
+    "message": {
+      "type": "string",
+      "description": "Текстовое сообщение от клиента"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Дата и время события в формате ISO 8601"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PENDING", "RECEIVED", "COMPLETED"],
+      "description": "Статус события"
+    },
+    "complaint_details": {
+      "type": "object",
+      "properties": {
+        "complaint_type": {
+          "type": "string",
+          "enum": ["QUALITY", "DELIVERY", "SERVICE"],
+          "description": "Тип жалобы (например, качество товара, доставка и т.д.)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Описание жалобы"
+        },
+        "resolution_status": {
+          "type": "string",
+          "enum": ["PENDING", "RESOLVED", "REJECTED"],
+          "description": "Статус разрешения жалобы"
+        }
+      },
+      "required": ["complaint_type", "description"]
+    },
+    "thanks_details": {
+      "type": "object",
+      "properties": {
+        "thank_you_message": {
+          "type": "string",
+          "description": "Сообщение благодарности"
+        },
+        "customer_feedback": {
+          "type": "string",
+          "description": "Отзыв клиента"
+        }
+      },
+      "required": ["thank_you_message"]
+    },
+    "question_details": {
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "string",
+          "description": "Вопрос клиента по заказу"
+        },
+        "response_status": {
+          "type": "string",
+          "enum": ["WAITING", "ANSWERED", "CLOSED"],
+          "description": "Статус ответа на вопрос"
+        }
+      },
+      "required": ["question"]
+    }
+  },
+  "required": ["event_type", "order_id", "customer_id", "message", "timestamp", "status"],
+  "oneOf": [
+    {
+      "properties": {
+        "event_type": { "const": "ORDER_COMPLAINT" }
+      },
+      "required": ["complaint_details"]
+    },
+    {
+      "properties": {
+        "event_type": { "const": "ORDER_THANKS" }
+      },
+      "required": ["thanks_details"]
+    },
+    {
+      "properties": {
+        "event_type": { "const": "ORDER_QUESTION" }
+      },
+      "required": ["question_details"]
+    }
+  ]
+}
