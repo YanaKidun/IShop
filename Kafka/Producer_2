@@ -1,0 +1,68 @@
+from kafka import KafkaProducer
+import json
+from datetime import datetime
+
+# Настройка параметров продюсера
+producer = KafkaProducer(
+    bootstrap_servers='localhost:9094',
+    key_serializer=str.encode,  # Сериализация ключа в байты
+    value_serializer=lambda v: json.dumps(v).encode('utf-8')  # Сериализация значения в JSON
+)
+
+# Функция для определения ключа в зависимости от event_type
+def get_key(event_type):
+    return {
+        'ORDER_COMPLAINT': 'complaint',
+        'ORDER_THANKS': 'thanks',
+        'ORDER_QUESTION': 'question'
+    }.get(event_type, 'default')  # Ключ по умолчанию
+
+# Пример сообщений
+messages = [
+    {
+        "event_type": "ORDER_THANKS",
+        "order_id": "12345",
+        "customer_id": "67890",
+        "message": "Thank you for the fast delivery!",
+        "timestamp": "2025-01-02T10:30:00Z",
+        "status": "RECEIVED",
+        "thanks_details": {
+            "thank_you_message": "Thank you for the fast delivery!",
+            "customer_feedback": "Very satisfied with the service."
+        }
+    },
+    {
+        "event_type": "ORDER_QUESTION",
+        "order_id": "12345",
+        "customer_id": "67890",
+        "message": "When will my order be delivered?",
+        "timestamp": "2025-01-02T10:30:00Z",
+        "status": "PENDING",
+        "question_details": {
+            "question": "When will my order be delivered?",
+            "response_status": "WAITING"
+        }
+    }
+]
+
+# Отправка сообщений с распределением по ключам
+for msg in messages:
+    key = get_key(msg['event_type'])  # Определяем ключ на основе event_type
+    value = {
+        "order_id": msg["order_id"],
+        "customer_id": msg["customer_id"],
+        "message": msg["message"],
+        "timestamp": msg["timestamp"],
+        "status": msg["status"],
+        "details": msg.get("complaint_details") or msg.get("thanks_details") or msg.get("question_details"),
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    # Отправка сообщения
+    producer.send('Topic2', key=key, value=value)
+
+# Ожидание завершения отправки сообщений
+producer.flush()
+
+print("Все сообщения отправлены!")
+
+producer.close()
