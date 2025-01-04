@@ -8,4 +8,7 @@
 Если у вас возникли сложности или вопросы по использованию пакета, создайте обсуждение в данном репозитории или напишите на электронную почту stabrovskayaya@gmail.com.
 
 ## Архитектура проекта
-Архитектура ппроекта пердставлена в файле [C4_Architecture](https://github.com/YanaKidun/IShop/blob/main/C4_Architecture)
+Архитектура проекта пердставлена в файле [C4_Architecture](https://github.com/YanaKidun/IShop/blob/main/C4_Architecture)
+
+## API
+Докуметация API для работы с проектом представлена в файле 
