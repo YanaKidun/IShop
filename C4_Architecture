@@ -1,0 +1,127 @@
+workspace "E-commerce System Architecture" "A representation of an e-commerce system."{
+
+model {
+    
+
+    group "Shop" {
+        unregistereduser = person "All users" 
+        admin = person "Administrator" "Manages the platform and oversees user activities."
+        registeredUser = person "Registered User" "Interacts with the platform to browse and purchase products."
+
+        unisender = softwareSystem "unisender" "The internal Microsoft Exchange e-mail system." "Existing System"
+        paymentGateWay = softwareSystem "Payment System" "Existing System"
+
+        ShopSystem = softwareSystem "Internet Shop System" "Allows customers to view information about products, make orders, and make payments." {
+            mobileApp = container "Mobile App" "Provides a limited subset of the Internet Shop functionality to customers via their mobile device." "Xamarin" "Mobile App"
+            webApplication = container "Web Application" "Delivers the static content and the Internet Shop single page application." "Java and Spring MVC" "Browser"
+            BackEnd = container "Backend Service" "Spring Boot" "Handles business logic and connects to external systems." "Application" {
+                inventoryService = component "Inventory Service" "Manages stock levels and inventory data." "Microservices"
+                deliveryService = component "Delivery Service" "Calculates delivery options and manages logistics." "Microservices"
+                cartService = component "Cart Service" "Handles the shopping cart functionality, allowing users to add, update, and remove items from their cart. Manages the cart state, calculates totals, and interacts with other services to process orders." "Microservices"
+                kafka = component "Broker" "Connect MS." "Broker"
+                emailComponent = component "E-mail Component" "Sends e-mails to users." "Spring Bean"
+                paymentComponent = component "Make payment for Bank" "A facade onto the mainframe banking system to make payment." "Spring Bean"
+                
+            }
+            apiApplication = container "API Application" "Provides Internet Shop functionality via a JSON/HTTPS API." "Java and Spring MVC" {
+                signinController = component "Sign In Controller" "Allows users to sign in to the Internet Shop System." "Spring MVC Rest Controller"
+                resetPasswordController = component "Reset Password Controller" "Allows users to reset their passwords with a single-use URL." "Spring MVC Rest Controller"
+                securityComponent = component "Security Component" "Provides functionality related to signing in, changing passwords, etc." "Spring Bean"
+                
+                
+                }
+            database = container "Database" "Stores user registration information, hashed authentication credentials, access logs, etc." "Oracle Database Schema" "Database"
+        }
+    }
+
+    // Связи между сущностями
+    unregistereduser -> mobileApp "Uses" "HTTPS"
+    unregistereduser -> webApplication "Uses" "HTTPS"
+    registeredUser -> mobileApp "Uses" "HTTPS"
+    registeredUser -> webApplication "Uses" "HTTPS"
+    admin -> webApplication "Manages" "HTTPS"
+
+    webApplication -> apiApplication "Uses" "JSON/HTTPS"
+    mobileApp -> apiApplication "Uses" "JSON/HTTPS"
+
+    apiApplication -> BackEnd "Sends requests to" "JSON/HTTPS"
+    BackEnd -> database "Reads from and writes to" "SQL"
+    inventoryService -> kafka "Publishes inventory updates to" "Kafka"
+    deliveryService -> kafka "Sends delivery requests to" "Kafka"
+    cartService -> kafka "Sends cart data to" "Kafka"
+
+    apiApplication -> unisender "Sends emails via" "SMTP"
+    paymentGateWay -> apiApplication  "Processes payments via" "HTTPS"
+
+    signinController -> securityComponent "Uses for authentication" "HTTPS"
+    resetPasswordController -> securityComponent "Uses for password reset" "HTTPS"
+    paymentComponent -> apiApplication "Initiates payment via" "HTTPS"
+    paymentComponent -> kafka "Sends cart data to" "Kafka"
+    emailComponent -> unisender "Sends emails to users" "SMTP"
+    emailComponent -> kafka "Sends cart data to" "Kafka"
+    
+}
+
+views {
+    // System Context Diagram
+    systemContext ShopSystem "SystemContext" {
+        include *
+        autoLayout
+        description "Displays the Internet Shop System and its interactions with users and external systems."
+    }
+
+    // Container Diagram
+    container ShopSystem "Containers" {
+        include *
+        autoLayout
+        description "Details the containers of the Internet Shop System and their interactions."
+    }
+    
+    
+
+    // Component Diagram for Backend
+    component Backend "Components" {
+        include *
+        autoLayout
+        description "Shows the internal components of the Backend Service."
+    }
+    component apiApplication "Components1" {
+        include *
+        autoLayout
+        description "Details the containers of the Internet Shop System and their interactions."
+    }
+
+    // Styles
+    styles {
+        element "Person" {
+            shape Person
+            color #ffffff
+            background #08427b
+        }
+        element "Software System" {
+            color #ffffff
+            background #1168bd
+        }
+        element "Container" {
+            color #ffffff
+            background #438dd5
+        }
+        element "Component" {
+            background #85bbf0
+            color #000000
+        }
+        element "Database" {
+            shape Cylinder
+            background #f5da81
+        }
+        element "External System" {
+            color #000000
+            background #85bbf0
+        }
+        element "Broker" {
+            shape Cylinder
+            background #f2f2f2
+        }
+    }
+}
+}
