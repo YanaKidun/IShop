@@ -1,0 +1,240 @@
+/* 
+Создание триггера на вставку для автоматического заполнения стоимости  
+товара при добавлении данных в таблицу client_order_detail.
+*/
+
+CREATE OR REPLACE FUNCTION set_product_price_with_discount()
+RETURNS TRIGGER AS $$
+DECLARE
+    product_discount_price DECIMAL(8,2);  /* Переменная для хранения стоимости товара со скидкой из таблицы product */
+BEGIN
+    SELECT price_with_discount INTO product_discount_price /* Получаем значение поля price_with_discount из таблицы product */
+    FROM product
+    WHERE product_id = NEW.product_id;
+    NEW.product_price_with_discount := product_discount_price;/* Присваиваем это значение полю product_price_with_discount новой записи */
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+/* 
+Создаем триггер, который срабатывает перед вставкой записи в таблицу client_order_detail
+и вызывает функцию set_product_price_with_discount для установки цены со скидкой.
+*/
+CREATE TRIGGER set_product_price_with_discount_trigger
+BEFORE INSERT ON client_order_detail
+FOR EACH ROW
+EXECUTE FUNCTION set_product_price_with_discount();
+
+-- -----------------------------------------------------
+-- Проверяем работу триггера
+-- Стоимость вставилась автоматически, без указания в коде insert
+-- -----------------------------------------------------
+
+INSERT INTO client_order (client_cart_id, client_id, client_cart_status_id, client_cart_sum, update_time, create_time)
+VALUES
+(3, 1, default, default, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO client_order_detail (client_cart_id, product_id, product_count, update_time)
+VALUES (3, 1, 5, CURRENT_TIMESTAMP);
+
+select  cod.client_cart_id, cod.product_price_with_discount, p.price_with_discount
+from client_order_detail AS cod
+join product AS p
+on cod.product_id = p.product_id; 
+
+/* 
+Создание функции summ_cart_sum для подсчета общей суммы заказа 
+на основе деталей заказа из таблицы client_order_detail.
+*/
+CREATE OR REPLACE FUNCTION summ_cart_sum(cart_id INT)
+RETURNS DECIMAL(8,2) AS $$
+DECLARE
+    total_sum DECIMAL(8,2); /* Переменная для хранения общей суммы */
+BEGIN
+    /* Вычисляем сумму по полю amount_product_sum для данного client_cart_id */
+    SELECT COALESCE(SUM(amount_product_sum), 0) INTO total_sum
+    FROM client_order_detail
+    WHERE client_cart_id = cart_id;
+
+    RETURN total_sum;
+END;
+$$ LANGUAGE plpgsql;
+
+/* 
+Создание триггера, который обновляет поле client_cart_sum 
+в таблице client_order после вставки записи в таблицу client_order_detail.
+*/
+CREATE OR REPLACE FUNCTION update_client_order_sum()
+RETURNS TRIGGER AS $$
+BEGIN
+    /* Вызываем функцию summ_cart_sum и обновляем поле client_cart_sum в client_order */
+    UPDATE client_order
+    SET client_cart_sum = summ_cart_sum(NEW.client_cart_id)
+    WHERE client_cart_id = NEW.client_cart_id;
+
+    RETURN NULL; /* Так как триггер AFTER, возвращаемое значение не требуется */
+END;
+$$ LANGUAGE plpgsql;
+
+/* 
+Создаем триггер after_insert_client_order_detail, который срабатывает 
+после вставки записи в таблицу client_order_detail.
+*/
+CREATE TRIGGER after_insert_client_order_detail
+AFTER INSERT ON client_order_detail
+FOR EACH ROW
+EXECUTE FUNCTION update_client_order_sum();
+
+/* Проверим как отрабатывает триггер + функция */
+
+
+INSERT INTO client_order (client_cart_id, client_id, client_cart_status_id, client_cart_sum, update_time, create_time)
+VALUES
+(6, 1, default, default, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO client_order_detail (client_cart_id, product_id, product_count, update_time)
+VALUES (6, 1, 5, CURRENT_TIMESTAMP);
+
+SELECT * FROM  client_order
+WHERE client_cart_id = 6;
+
+INSERT INTO client_order_detail (client_cart_id, product_id, product_count, update_time)
+VALUES (6, 2, 2, CURRENT_TIMESTAMP);
+
+
+/* Триггерная функция для пересчета суммы заказа при обновлении строки в таблице client_order_detail
+реиспользуем функцию summ_cart_sum */
+CREATE OR REPLACE FUNCTION update_order_sum_after_update()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE client_order
+    SET client_cart_sum = summ_cart_sum(NEW.client_cart_id)
+    WHERE client_cart_id = NEW.client_cart_id;
+
+    RETURN NULL; /* Поскольку триггер AFTER, возвращаемое значение не требуется */
+END;
+$$ LANGUAGE plpgsql;
+
+/* Триггер для пересчета суммы при обновлении записи в таблице client_order_detail.*/
+CREATE TRIGGER update_client_order_detail
+AFTER UPDATE ON client_order_detail
+FOR EACH ROW
+EXECUTE FUNCTION update_order_sum_after_update();
+
+/* Триггерная функция для пересчета суммы заказа при удалении строки в таблице client_order_detail.*/
+CREATE OR REPLACE FUNCTION update_order_sum_after_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE client_order
+    SET client_cart_sum = summ_cart_sum(OLD.client_cart_id)
+    WHERE client_cart_id = OLD.client_cart_id;
+
+    RETURN NULL; /* Поскольку триггер AFTER, возвращаемое значение не требуется */
+END;
+$$ LANGUAGE plpgsql;
+
+/* Триггер для пересчета суммы при удалении записи в таблице client_order_detail.*/
+CREATE TRIGGER delete_client_order_detail
+AFTER DELETE ON client_order_detail
+FOR EACH ROW
+EXECUTE FUNCTION update_order_sum_after_delete();
+
+
+-- -------------------------------------------
+-- Обновление суммы выкупа клиента в таблице client, когда изменяется статус заказа на 'Paid' (id=6) и 'Returned' (id=7)
+-- -------------------------------------------
+
+CREATE OR REPLACE FUNCTION update_client_amout_order()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Проверка: если новый статус заказа 6 (Paid), добавляем сумму заказа
+    IF NEW.client_cart_status_id = 6 THEN
+        UPDATE client
+        SET client_amout_order = client_amout_order + NEW.client_cart_sum
+        WHERE client_id = NEW.client_id;
+
+    -- Проверка: если новый статус заказа 7 (Returned), отнимаем сумму заказа
+    ELSIF NEW.client_cart_status_id = 7 THEN
+        UPDATE client
+        SET client_amout_order = client_amout_order - OLD.client_cart_sum
+        WHERE client_id = NEW.client_id;
+    END IF;
+
+    RETURN NULL;  -- Поскольку триггер AFTER, возвращаемое значение не требуется
+END;
+$$ LANGUAGE plpgsql;
+
+-- Триггер для обновления суммы выкупа клиента при изменении статуса заказа
+CREATE TRIGGER new_client_amout_order
+AFTER UPDATE ON client_order
+FOR EACH ROW
+EXECUTE FUNCTION update_client_amout_order();
+
+/*Проверим как отрабатывает триггер. Создадим заказы, а после обновим их статус. */
+SELECT * FROM client_order;
+
+INSERT INTO client_order (client_cart_id, client_id, client_cart_status_id, client_cart_sum, update_time, create_time)
+VALUES
+(9, 1, default, default, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO client_order_detail (client_cart_id, product_id, product_count, update_time)
+VALUES 
+(9, 2, 5, CURRENT_TIMESTAMP),
+(9, 10, 20, CURRENT_TIMESTAMP);
+
+UPDATE client_order
+SET 
+    client_cart_status_id = 6
+WHERE client_cart_id = 9;
+
+-- -------------------------------------------
+-- Пример процедуры, которая будет обновлять начальную (start_price) стоимость товара в зависимости от скидки
+-- -------------------------------------------
+DROP PROCEDURE update_product_price_wd;
+CREATE OR REPLACE PROCEDURE update_product_price_wd(IN product_id_param INT, IN discount_param DECIMAL(5,2))
+LANGUAGE plpgsql AS $$
+BEGIN
+    UPDATE product
+    SET start_price = start_price - (start_price * discount_param / 100)
+    WHERE product_id = product_id_param; 
+END;
+$$;
+
+-- Вызов процедуры
+CALL update_product_price_wd(5, 50.00); -- (product_id, % скидки)
+
+
+-- -------------------------------------------
+-- Пример процедуры, которая будет обновлять статус клиента на вип, при условии выкупа на больше, чем 500р
+-- -------------------------------------------
+
+CREATE OR REPLACE PROCEDURE update_client_status(IN client_id_param INT)
+LANGUAGE plpgsql AS
+$$
+DECLARE
+    amount_order DECIMAL(8,2);
+BEGIN
+    -- Забираем текущее значение client_amout_order для клиента (общая сумма выкупа)
+    SELECT client_amout_order INTO amount_order
+    FROM client
+    WHERE client_id = client_id_param;
+
+    -- Проверяем сумму выкупа
+    IF amount_order > 500 THEN
+        -- Обновляем статус клиента на ВИП
+        UPDATE client
+        SET client_status_id = 5,  -- 5 означает ВИП
+            update_time = CURRENT_TIMESTAMP
+        WHERE client_id = client_id_param;
+
+        -- Возвращаем сообщение об успешном изменении статуса
+        RAISE NOTICE 'Статус клиента изменен на ВИП';
+    ELSE
+        -- Возвращаем сообщение, что статус ВИП недоступен
+        RAISE NOTICE 'Общая сумма выкупа меньше или равна 500р, статус ВИП недоступен';
+    END IF;
+END;
+$$;
+
+-- Вызов процедуры
+CALL update_client_status(1); -- Пример вызова для клиента с client_id = 1
