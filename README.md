@@ -11,7 +11,7 @@
 Архитектура проекта пердставлена в файле [C4_Architecture](https://github.com/YanaKidun/IShop/blob/main/C4_Architecture)
 
 ## API
-Докуметация API для работы с проектом представлена в [файле](https://github.com/YanaKidun/IShop/blob/main/API) дополнительно ознакомится можно прейдя по сслыке: https://app.swaggerhub.com/apis/STABROVSKAYAYA/Iba/1.0.0
+Докуметация API для работы с проектом представлена в [файле](https://github.com/YanaKidun/IShop/blob/main/API/API_Swagger) дополнительно ознакомится можно прейдя по сслыке: https://app.swaggerhub.com/apis/STABROVSKAYAYA/Iba/1.0.0
 Общее описание работы с [OpenAPI](https://github.com/docops-hq/learnapidoc-ru/blob/master/openAPI-specification/README.md)
 
 ## Описание Кafka
