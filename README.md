@@ -15,4 +15,4 @@
 Общее описание работы с [OpenAPI](https://github.com/docops-hq/learnapidoc-ru/blob/master/openAPI-specification/README.md)
 
 ## Описание Кafka
-Описание используемого брокет=ра сообщений, приложения продьюсера, консьюмера, а так же требования предствалены в разделе Kafka
+Описание используемого брокера сообщений, приложения продьюсера, консьюмера, а так же требования предствалены в разделе [Kafka](https://github.com/YanaKidun/IShop/tree/main/Kafka)
