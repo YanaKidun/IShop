@@ -1,0 +1,233 @@
+asyncapi: '2.6.0'
+id: 'urn:eventId:9092'
+info:
+  title: Async API specification for Kafka
+  version: '1.0.0'
+  description: 'Спецификация асинхронного обмена данными через Kafka'
+
+servers:
+  dev:
+    url: localhost:9092
+    protocol: kafka-secure
+    description: 'параметры брокера Kafka'
+    security:
+      - saslScram: [SCRAM-SHA-256]
+
+defaultContentType: application/json
+
+channels:
+  publishing.{eventId}:
+    description: приложение-продюсер для отправки сообщений в Kafka
+    parameters:
+      eventId:
+        $ref: '#/components/parameters/eventId'
+    publish:
+      summary: 'Генерация события, отправляемого с клиентского приложения в Kafka'
+      operationId: PublishNewEvent
+      traits:
+        - $ref: '#/components/operationTraits/kafka'
+      message:
+        oneOf:
+          - $ref: '#/components/messages/complaintMessage'
+          - $ref: '#/components/messages/thanksMessage'
+          - $ref: '#/components/messages/questionMessage'
+    bindings:
+      kafka:
+        key:
+          type: string
+          description: 'Ключ для распределения по партициям (например, "complaint", "thanks", "question")'
+        partitionKey:
+          type: string
+          description: 'Используется для партиционирования сообщений по ключу'
+
+  complaints:
+    description: 'раздел жалоб'
+    subscribe:
+      operationId: complaints_performing
+      traits:
+        - $ref: '#/components/operationTraits/kafka'
+      message:
+        $ref: '#/components/messages/complaintMessage'
+
+  thanks:
+    description: 'раздел благодарностей'
+    subscribe:
+      operationId: thankss_performing
+      traits:
+        - $ref: '#/components/operationTraits/kafka'
+      message:
+        $ref: '#/components/messages/thanksMessage'
+
+  questions:
+    description: 'раздел вопросов'
+    subscribe:
+      operationId: questions_performing
+      traits:
+        - $ref: '#/components/operationTraits/kafka'
+      message:
+        $ref: '#/components/messages/questionMessage'
+
+components:
+  securitySchemes:
+    saslScram:
+      type: scramSha256
+      description: 'Протокол безопасности SASL_SSL, механизм безопасности SCRAM-SHA-256'
+
+  parameters:
+    eventId:
+      description: 'Идентификатор события'
+      schema:
+        type: string
+        description: 'x-xx:xx-xx-xx-xxx'
+
+  messages:
+    complaintMessage:
+      name: complaintMessage
+      title: 'Сообщение - Жалоба'
+      summary: 'Сообщение с жалобой клиента'
+      contentType: application/json
+      traits:
+        - $ref: '#/components/messageTraits/complaintHeader'
+      payload:
+        type: object
+        properties:
+          id:
+            type: integer
+            description: 'Идентификатор жалобы'
+          fio:
+            type: string
+            description: 'ФИО клиента'
+          topic:
+            type: string
+            description: 'Тема сообщения (например, "complaint")'
+          text:
+            type: string
+            description: 'Текст жалобы'
+          date:
+            type: string
+            format: date-time
+            description: 'Дата и время сообщения'
+          time:
+            type: string
+            format: date-time
+            description: 'Дата и время отправки сообщения'
+          order_id:
+             "type": "integer"
+             "description": "Идентификатор заказа, связанного с сообщением"
+    
+
+
+    thanksMessage:
+      name: thanksMessage
+      title: 'Сообщение - Благодарность'
+      summary: 'Сообщение с благодарностью клиента'
+      contentType: application/json
+      traits:
+        - $ref: '#/components/messageTraits/thanksHeader'
+      payload:
+        type: object
+        properties:
+          id:
+            type: integer
+            description: 'Идентификатор благодарности'
+          fio:
+            type: string
+            description: 'ФИО клиента'
+          topic:
+            type: string
+            description: 'Тема сообщения (например, "thanks")'
+          text:
+            type: string
+            description: 'Текст благодарности'
+          date:
+            type: string
+            format: date-time
+            description: 'Дата и время сообщения'
+          time:
+            type: string
+            format: date-time
+            description: 'Дата и время отправки сообщения'
+          order_id:
+             "type": "integer"
+             "description": "Идентификатор заказа, связанного с сообщением"
+
+    questionMessage:
+      name: questionMessage
+      title: 'Сообщение - Вопрос'
+      summary: 'Сообщение с вопросом клиента'
+      contentType: application/json
+      traits:
+        - $ref: '#/components/messageTraits/questionHeader'
+      payload:
+        type: object
+        properties:
+          id:
+            type: integer
+            description: 'Идентификатор вопроса'
+          fio:
+            type: string
+            description: 'ФИО клиента'
+          topic:
+            type: string
+            description: 'Тема сообщения (например, "question")'
+          text:
+            type: string
+            description: 'Текст вопроса'
+          date:
+            type: string
+            format: date-time
+            description: 'Дата и время сообщения'
+          time:
+            type: string
+            format: date-time
+            description: 'Дата и время отправки сообщения'
+          order_id:
+             "type": "integer"
+             "description": "Идентификатор заказа, связанного с сообщением"
+
+  messageTraits:
+    complaintHeader:
+      headers:
+        type: object
+        properties:
+          header:
+            type: string
+            enum:
+              - complaint_order
+        description: 'Заголовок жалобы'
+
+    thanksHeader:
+      headers:
+        type: object
+        properties:
+          header:
+            type: string
+            enum:
+              - thanks_order
+        description: 'Заголовок благодарности'
+
+    questionHeader:
+      headers:
+        type: object
+        properties:
+          header:
+            type: string
+            enum:
+              - question_order
+        description: 'Заголовок вопроса'
+
+  operationTraits:
+    kafka:
+      bindings:
+        kafka:
+          topic: 'Topic7'
+          partitions: 3
+          replicas: 3
+          topicConfiguration:
+            cleanup.policy: ["delete", "compact"]
+            retention.ms: 604800000
+            retention.bytes: 1000000000
+            delete.retention.ms: 86400000
+            max.message.bytes: 1048588
+        bindingVersion: '0.4.0'
+
