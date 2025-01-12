@@ -3,15 +3,14 @@
 ## Описание
 Эндпоинт для аутентификации пользователя.
 
-## Тело запроса
+## Тело запроса и ответа
 ```json
 {
-  "username": "example@example.com",
-  "password": "password"
-}
-
-## Тело ответа
-```json
-{
-  "token": "Bearer eyJ0eXAiOiJKV1Qi..."
+  "request": {
+    "username": "example@example.com",
+    "password": "password"
+  },
+  "response": {
+    "token": "Bearer eyJ0eXAiOiJKV1Qi..."
+  }
 }
