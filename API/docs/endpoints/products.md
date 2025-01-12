@@ -18,6 +18,7 @@
     "count_of_warehouse": 1000
   }
 ]
+ ```
 
 ## Описание ошибок:
 500: Внутренняя ошибка сервера
@@ -36,7 +37,7 @@
   "char_code": "SHP0001",
   "count_of_warehouse": 1000
 }
-
+ ```
 
 ## Тело ответа
 нет
@@ -64,6 +65,7 @@
   "char_code": "SHP0001",
   "count_of_warehouse": 1000
 }
+ ```
 
 ## Описание ошибок:
 404: Товар не найден
@@ -83,6 +85,7 @@
   "char_code": "SHP0001",
   "count_of_warehouse": 1000
 }
+ ```
 
 ## Тело ответа
 ```json
@@ -94,6 +97,7 @@
   "char_code": "SHP0001",
   "count_of_warehouse": 1000
 }
+ ```
 
 
 # DELETE /products/{id}
