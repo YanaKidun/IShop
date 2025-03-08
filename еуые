@@ -1,0 +1,75 @@
+# IShop
+
+Проект IShop. В этом репозитории вы найдете исходный код и инструкции для запуска проекта.
+
+## Основные команды Git для работы с проектом IShop
+
+Для работы с репозиторием IShop используйте следующие команды Git:
+
+| Команда                              | Описание                                                                 | Пример для IShop                                                                 |
+|--------------------------------------|-------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `git clone <URL>`                    | Клонирует репозиторий на локальный компьютер.                           | `git clone https://github.com/YanaKidun/IShop.git`                              |
+| `git checkout -b <branch-name>`      | Создает новую ветку и переключается на нее.                             | `git checkout -b feature/add-new-product`                                       |
+| `git status`                         | Показывает текущее состояние репозитория.                               | `git status`                                                                    |
+| `git add <file>`                     | Добавляет файл в staging area (подготовку к коммиту).                   | `git add src/components/ProductList.js`                                         |
+| `git add .`                          | Добавляет все измененные файлы в staging area.                          | `git add .` (добавляет все изменения в проекте IShop).                          |
+| `git commit -m "Сообщение"`          | Фиксирует изменения с указанным сообщением.                             | `git commit -m "Добавлен новый компонент ProductList"`                          |
+| `git push origin <branch-name>`      | Отправляет изменения из локальной ветки в удаленный репозиторий.        | `git push origin feature/add-new-product`                                       |
+| `git pull origin <branch-name>`      | Забирает изменения из удаленной ветки и объединяет их с текущей веткой. | `git pull origin main` (обновляет локальную ветку `main` из удаленного репозитория).|
+| `git checkout <branch-name>`         | Переключается на указанную ветку.                                       | `git checkout main` (переключение на ветку `main`).                             |
+| `git log`                            | Показывает историю коммитов в текущей ветке.                            | `git log` (показывает историю коммитов в проекте IShop).                        |
+| `git log --oneline`                  | Показывает историю коммитов в сокращенном формате.                      | `git log --oneline` (краткая история коммитов).                                 |
+| `git merge <branch-name>`            | Объединяет указанную ветку с текущей.                                   | `git merge feature/add-new-product` (слияние ветки в `main`).                   |
+| `git branch -d <branch-name>`        | Удаляет локальную ветку.                                                | `git branch -d feature/add-new-product` (удаление ветки).                       |
+| `git push origin --delete <branch-name>` | Удаляет ветку на удаленном репозитории.                              | `git push origin --delete feature/add-new-product`                              |
+| `git branch`                         | Показывает список локальных веток.                                      | `git branch` (показывает ветки в проекте IShop).                                |
+| `git branch -a`                      | Показывает список всех веток (локальных и удаленных).                    | `git branch -a` (показывает все ветки, включая удаленные).                      |
+| `git checkout -- <file>`             | Отменяет изменения в файле, возвращая его к состоянию последнего коммита.| `git checkout -- src/components/ProductList.js`                                 |
+| `git reset <file>`                   | Убирает файл из staging area, но сохраняет изменения в рабочей директории.| `git reset src/components/ProductList.js`                                       |
+| `git tag <tag-name>`                 | Создает тег для текущего коммита.                                       | `git tag v1.0.0` (создание тега для версии 1.0.0).                             |
+| `git push origin <tag-name>`         | Отправляет тег в удаленный репозиторий.                                 | `git push origin v1.0.0` (отправка тега в удаленный репозиторий).               |
+| `git diff`                           | Показывает различия между рабочей директорией и staging area.           | `git diff` (показывает изменения в проекте IShop).                              |
+| `git diff --cached`                  | Показывает изменения, подготовленные к коммиту.                         | `git diff --cached` (показывает изменения в staging area).                      |
+| `git rebase <branch-name>`           | Перемещает коммиты текущей ветки на верхушку указанной ветки.           | `git rebase main` (перебазирует текущую ветку на `main`).                       |
+| `git reset --soft HEAD~1`            | Отменяет последний коммит, сохраняя изменения в рабочей директории.     | `git reset --soft HEAD~1` (отмена последнего коммита в проекте IShop).          |
+| `git reset --hard HEAD~1`            | Отменяет последний коммит и удаляет все изменения.                      | `git reset --hard HEAD~1` (полная отмена последнего коммита).                   |
+| `git remote -v`                      | Показывает список удаленных репозиториев.                               | `git remote -v` (показывает удаленные репозитории для IShop).                   |
+| `git remote add origin <URL>`        | Добавляет удаленный репозиторий с именем `origin`.                      | `git remote add origin https://github.com/YanaKidun/IShop.git`                  |
+| `git fetch origin`                   | Забирает изменения из удаленного репозитория, но не объединяет их.      | `git fetch origin` (обновляет информацию о удаленных ветках).                   |
+| `git commit --allow-empty -m "Сообщение"` | Создает пустой коммит (без изменений).                              | `git commit --allow-empty -m "Пустой коммит для теста CI/CD"`                   |
+| `git show <commit-hash>`             | Показывает изменения, внесенные в указанном коммите.                    | `git show abc1234` (показывает изменения в коммите `abc1234`).                  |
+| `git diff <branch1>..<branch2>`      | Показывает различия между двумя ветками.                                | `git diff main..feature/add-new-product` (показывает различия между ветками).    |
+
+---
+
+### Установка зависимостей
+Перед началом работы установите зависимости:
+```bash
+npm install
+```
+
+Для запуска проекта выполните
+```bash
+npm start
+```
+Для запуска тестов используйте:
+```bash
+npm test
+```
+
+### Добавление изменений
+Сделайте форк репозитория.
+Создайте новую ветку для ваших изменений:
+
+```bash
+git checkout -b feature/your-feature-name```
+
+Внесите изменения и закоммитьте их:
+```bash
+git add .
+git commit -m "Ваше описание изменений"```
+
+Отправьте изменения в ваш форк:
+```bash
+
+git push origin feature/your-feature-name```
