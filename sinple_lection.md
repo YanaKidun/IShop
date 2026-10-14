@@ -75,3 +75,6 @@ git commit -m "Ваше описание изменений"
 ```bash
 git push origin feature/your-feature-name
 ```
+
+
+Архитектура проекта пердставлена в файле [C4_Architecture]
