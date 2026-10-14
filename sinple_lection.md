@@ -77,4 +77,4 @@ git push origin feature/your-feature-name
 ```
 
 
-Архитектура проекта пердставлена в файле [C4_Architecture]
+Архитектура проекта пердставлена в файле [C4_Architecture](https://github.com/YanaKidun/IShop/blob/main/System%20Architecture/%D0%A14_Architecture)
